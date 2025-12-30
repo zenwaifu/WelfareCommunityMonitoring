@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard Summary - Digital Village</title>
+    
+    <link rel="stylesheet" href="../style.css"> 
+
+    <style>
+        .main-content { flex: 1; padding: 40px; }
+        .welcome-header { margin-bottom: 30px; }
+        .welcome-header h1 { font-size: 32px; color: #2b8fae; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .stat-card { background: white; border: 2px solid #000; border-radius: 15px; padding: 25px; box-shadow: 6px 6px 0px rgba(0,0,0,0.1); transition: 0.3s; cursor: pointer;}
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 10px 10px 0px #7dc9e1; }
+        .stat-card h3 { font-size: 14px; text-transform: uppercase; color: #666; margin-bottom: 10px; }
+        .stat-card .value { font-size: 36px; font-weight: 800; color: #000; }
+        .stat-card .trend { font-size: 13px; margin-top: 10px; font-weight: 600; }
+        .trend.up { color: #27ae60; }
+        .trend.pending { color: #f39c12; }
+
+        .content-card { background: white; border: 2px solid #000; border-radius: 15px; padding: 30px; }
+        .content-card h2 { margin-bottom: 20px; font-size: 22px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px; border-bottom: 2px solid #eee; color: #666; font-size: 14px; }
+        td { padding: 15px 12px; border-bottom: 1px solid #eee; font-size: 15px; }
+        
+        .status-pill { padding: 5px 12px; border-radius: 15px; font-size: 11px; font-weight: 700; text-transform: uppercase; border: 1px solid rgba(0,0,0,0.1); }
+        .pill-approved { background: #d1fae5; color: #065f46; }
+        .pill-pending { background: #fef3c7; color: #92400e; }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <div class="nav-brand">DIGITAL VILLAGE</div>
+        <div class="admin-profile">
+            <div class="admin-info">
+                <p class="admin-name" id="displayAdminName">Admin</p>
+                <p class="admin-role" id="displayAdminRole">STAFF</p>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="layout-body">
+        <aside class="sidebar">
+            <div class="menu-label">ADMIN PANEL</div>
+            <a href="../admin/admindashboard.html" class="menu-item active">Dashboard Summary</a>
+            <a href="../shared/welfareregisterpage.html" class="menu-item">Register Welfare</a>
+            <a href="../shared/viewapplications.html" class="menu-item">View Applicants</a>
+            <a href="../shared/viewcomplaints.html" class="menu-item">Manage Complaints</a>
+            <a href="../shared/aidtracker.html" class="menu-item">Aid Delivery List</a>
+        </aside>
+
+        <main class="main-content">
+            <div class="welcome-header">
+                <h1>System Overview</h1>
+                <p>Welcome back, <span id="welcomeName" style="font-weight: 700;">Admin</span>. Here is the latest village data.</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Recipients</h3>
+                    <p class="value">1,284</p>
+                    <p class="trend up">↑ 12% from last month</p>
+                </div>
+                <div class="stat-card" onclick="window.location.href='../shared/viewapplications.html'">
+                    <h3>Pending Applications</h3>
+                    <p class="value" id="pendingAppsCount">0</p>
+                    <p class="trend pending">Action required</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Aid Delivered</h3>
+                    <p class="value">856</p>
+                    <p class="trend up">B40 & Single Mothers</p>
+                </div>
+                <div class="stat-card" onclick="window.location.href='../shared/viewcomplaints.html'">
+                    <h3>Active Complaints</h3>
+                    <p class="value" id="activeComplaintsCount">0</p>
+                    <p class="trend" id="complaintTrend">Calculating...</p>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <h2>Recent Welfare Registrations</h2>
+                <table id="recentTable">
+                    <thead>
+                        <tr>
+                            <th>Applicant Name</th>
+                            <th>IC Number</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Siti Aminah binti Ali</td>
+                            <td>850214-01-xxxx</td>
+                            <td>Single Mother</td>
+                            <td><span class="status-pill pill-approved">Approved</span></td>
+                        </tr>
+                        <tr>
+                            <td>Ramasamy A/L Logan</td>
+                            <td>620910-08-xxxx</td>
+                            <td>Elderly Person</td>
+                            <td><span class="status-pill pill-pending">Pending Review</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get the JSON data from localStorage
+            const sessionData = localStorage.getItem('currentUser');
+            
+            if (!sessionData) {
+                // If no one is logged in, kick them back to login page
+                window.location.href = '../login.html';
+                return;
+            }
+
+            const user = JSON.parse(sessionData);
+
+            // Update the Nav Bar specifically
+            const nameDisplay = document.getElementById('displayAdminName');
+            const roleDisplay = document.getElementById('displayAdminRole');
+            const welcomeName = document.getElementById('welcomeName');
+
+            if (nameDisplay) nameDisplay.innerText = user.fullName;
+            if (roleDisplay) roleDisplay.innerText = user.role;
+            if (welcomeName) welcomeName.innerText = user.fullName;
+
+            // 2. Real-time Count Logic
+            updateDashboardStats();
+        });
+
+        function updateDashboardStats() {
+            // Get complaints from "database"
+            const complaints = JSON.parse(localStorage.getItem('complaints_db')) || [];
+            
+            // Filter only "Pending" or "In Progress"
+            const activeComplaints = complaints.filter(c => c.status !== 'Resolved' && c.status !== 'Closed');
+            
+            // Update Dashboard UI
+            document.getElementById('activeComplaintsCount').innerText = activeComplaints.length;
+            
+            const trendText = document.getElementById('complaintTrend');
+            if (activeComplaints.length > 5) {
+                trendText.innerText = "High Volume";
+                trendText.style.color = "#e74c3c";
+            } else {
+                trendText.innerText = "Low priority";
+                trendText.style.color = "#666";
+            }
+
+            // Mimicking Application Count (You can apply same logic for applications later)
+            document.getElementById('pendingAppsCount').innerText = "42"; 
+        }
+
+        // Populate dummy registrations for display
+        const dummyApplicants = [
+            { name: "Siti Aminah binti Ali", ic: "850214-01-xxxx", cat: "Single Mother", status: "Approved" },
+            { name: "Ramasamy A/L Logan", ic: "620910-08-xxxx", cat: "Elderly Person", status: "Pending" },
+            { name: "Chong Wei Hou", ic: "951201-14-xxxx", cat: "B40 Group", status: "Approved" },
+            { name: "Nurul Izzah", ic: "920315-02-xxxx", cat: "Disabled (OKU)", status: "Pending" }
+        ];
+
+        const tableBody = document.querySelector("#recentTable tbody");
+        if (tableBody) {
+            tableBody.innerHTML = dummyApplicants.map(app => `
+                <tr>
+                    <td>${app.name}</td>
+                    <td>${app.ic}</td>
+                    <td>${app.cat}</td>
+                    <td><span class="status-pill ${app.status === 'Approved' ? 'pill-approved' : 'pill-pending'}">
+                        ${app.status === 'Pending' ? 'Pending Review' : app.status}
+                    </span></td>
+                </tr>
+            `).join('');
+        }
+
+        function logout() {
+            if(confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                // Adjust path based on where the page is located
+                window.location.href = '../login.html'; 
+            }
+        }
+    </script>
+</body>
+</html>

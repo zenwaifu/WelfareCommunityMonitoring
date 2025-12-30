@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welfare Registration | Digital Village</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Form-Specific Styling - Keeping all your logic */
+        .form-container { display: flex; justify-content: center; width: 100%; }
+        .form-card { width: 100%; max-width: 900px; }
+        .form-header { margin-bottom: 30px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; text-align: center; }
+        .form-header h2 { font-size: 32px; color: #2b8fae; font-weight: 700; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .full-width { grid-column: span 2; }
+        
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .input-group label { font-size: 18px; font-weight: 600; color: #000; }
+        .input-group input, .input-group select { 
+            width: 100%; 
+            padding: 12px 20px; 
+            border: 1px solid #000; 
+            border-radius: 10px; 
+            font-size: 16px; 
+            outline: none;
+            transition: 0.3s;
+        }
+        .input-group input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2); }
+
+        .btn-submit { 
+            background-color: #7dc9e1; 
+            color: #000; 
+            padding: 12px 40px; 
+            border: 1px solid #000; 
+            border-radius: 10px; 
+            font-size: 18px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            margin-top: 30px; 
+            transition: all 0.3s ease; 
+        }
+        .btn-submit:hover { background-color: #6bb8d1; transform: translateY(-2px); box-shadow: 0px 4px 8px rgba(0,0,0,0.2); }
+
+        /* Modal Overlay */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-box { background: white; padding: 40px; border-radius: 15px; border: 3px solid #000; text-align: center; box-shadow: 10px 10px 0px rgba(0,0,0,0.2); }
+        
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-box">
+            <h3 style="color: #27ae60; font-size: 24px;">Success!</h3>
+            <p style="margin-top: 10px;">Welfare application submitted successfully!</p>
+            <button class="logout-btn" style="background:#000; margin-top:20px;" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <nav class="top-nav">
+        <div class="nav-brand">DIGITAL VILLAGE</div>
+        <div class="admin-profile">
+            <div class="admin-info">
+                <div class="admin-name" id="displayUserName">Username</div>
+                <div class="admin-role" id="displayUserRole">Admin</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="layout-body">
+        <aside class="sidebar" id="sidebarMenu"></aside>
+
+        <main class="main-content">
+            <div class="form-container">
+                <div class="content-card form-card">
+                    <div class="form-header">
+                        <h2>Welfare Registration Form</h2>
+                        <p>Complete all fields to process the assistance application.</p>
+                    </div>
+
+                    <form id="welfareForm">
+                        <div class="form-grid">
+                            <div class="input-group full-width">
+                                <label for="fullName">Full Name</label>
+                                <input type="text" id="fullName" placeholder="Enter full name (as per IC)" required>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="icNumber">IC Number</label>
+                                <input type="text" id="icNumber" placeholder="e.g. 880101-01-xxxx" required>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" placeholder="email@example.com" required>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" placeholder="e.g. 012-3456789" required>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="householdSize">Household Size</label>
+                                <input type="number" id="householdSize" placeholder="5" min="1" required>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="monthlyIncome">Monthly Income (RM)</label>
+                                <input type="number" id="monthlyIncome" placeholder="1500" min="0" step="0.01" required>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="welfareCategory">Welfare Category</label>
+                                <select id="welfareCategory" required>
+                                    <option value="">-- Select Category</option>
+                                    <option value="b40">B40</option>
+                                    <option value="single-mother">Single Mother</option>
+                                    <option value="elderly">Elderly Person</option>
+                                    <option value="disability">Person With Disability</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group full-width">
+                                <label for="aidType">Type of Aid Needed</label>
+                                <select id="aidType" required>
+                                    <option value="">-- Select Aid Type</option>
+                                    <option value="food">Food Assistance</option>
+                                    <option value="cash">Cash Assistance</option>
+                                    <option value="medical">Medical Assistance</option>
+                                    <option value="education">Educational Support</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="text-align: center;">
+                            <button type="submit" class="btn-submit">Submit Application</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Get the JSON data from localStorage
+            const sessionData = localStorage.getItem('currentUser');
+            
+            if (!sessionData) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            const user = JSON.parse(sessionData);
+
+            // 2. Update the Nav Bar (Matching the IDs in your HTML)
+            const nameDisplay = document.getElementById('displayUserName'); // Matches HTML ID
+            const roleDisplay = document.getElementById('displayUserRole'); // Matches HTML ID
+
+            if (nameDisplay) nameDisplay.innerText = user.fullName;
+            if (roleDisplay) roleDisplay.innerText = `${user.role}`;
+
+            // 3. Dynamic Sidebar Logic
+            const sidebar = document.getElementById('sidebarMenu');
+            
+            // Check user.role instead of just 'role'
+            if (user.role.toLowerCase().includes('admin')) {
+                sidebar.innerHTML = `
+                    <div class="menu-label">ADMIN PANEL</div>
+                    <a href="../admin/admindashboard.html" class="menu-item">Dashboard Summary</a>
+                    <a href="welfareregisterpage.html" class="menu-item active">Register Welfare</a>
+                    <a href="viewapplications.html" class="menu-item">View Applicants</a>
+                    <a href="viewcomplaints.html" class="menu-item">Manage Complaints</a>
+                    <a href="../shared/aidtracker.html" class="menu-item">Aid Delivery List</a>
+                `;
+            } else {
+                sidebar.innerHTML = `
+                    <div class="menu-label">RESIDENT MENU</div>
+                    <a href="../user/userdashboard.html" class="menu-item"><span>My Dashboard</span></a>
+                    <a href="welfareregisterpage.html" class="menu-item active"><span>Apply Welfare</span></a>
+                    <a href="viewapplications.html" class="menu-item"><span>Check Status</span></a>
+                `;
+            }
+        });
+
+        // Form Handling
+        document.getElementById('welfareForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Mimic saving to a database
+            const applications = JSON.parse(localStorage.getItem('welfare_db')) || [];
+            const newApp = {
+                name: document.getElementById('fullName').value,
+                ic: document.getElementById('icNumber').value,
+                category: document.getElementById('welfareCategory').value,
+                status: 'Pending'
+            };
+            applications.push(newApp);
+            localStorage.setItem('welfare_db', JSON.stringify(applications));
+
+            document.getElementById('successModal').style.display = 'flex';
+            this.reset();
+        });
+
+        function closeModal() { document.getElementById('successModal').style.display = 'none'; }
+
+        function logout() {
+            if(confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = '../login.html'; 
+            }
+        }
+    </script>
+</body>
+</html>

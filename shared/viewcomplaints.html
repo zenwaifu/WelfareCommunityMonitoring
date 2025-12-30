@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaints Management - Digital Village</title>
+    
+    <link rel="stylesheet" href="../style.css"> 
+
+    <style>
+        /* Table-specific styles - Matches viewapplications.html exactly */
+        .page-title { margin-bottom: 20px; color: #2b8fae; font-size: 28px; font-weight: 700; }
+        
+        .table-container { 
+            width: 100%; 
+            background: #fff;
+            border: 2px solid #000; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.1);
+        }
+        
+        .table-header { 
+            display: flex; 
+            background: #7dc9e1; 
+            border-bottom: 2px solid #000; 
+            font-weight: 800; 
+            color: #000;
+        }
+        
+        .table-row { 
+            display: flex; 
+            border-bottom: 1px solid #eee; 
+            transition: 0.2s; 
+            align-items: center;
+        }
+        
+        .table-row:last-child { border-bottom: none; }
+        .table-row:hover { background-color: #f0f7f9; }
+        
+        .table-cell, .table-header-cell { 
+            flex: 1; 
+            padding: 15px; 
+            text-align: left; 
+            font-size: 16px;
+        }
+        
+        /* Status Badges - Consistent with App Status */
+        .status-pill {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .pill-pending { background: #fef3c7; color: #92400e; }
+        .pill-resolved { background: #d1fae5; color: #065f46; }
+        .pill-in-progress { background: #e0f2fe; color: #075985; }
+        
+        .action-btn { 
+            background: #7dc9e1; 
+            border: 1px solid #000; 
+            padding: 8px 18px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            color: #000;
+            font-size: 14px;
+        }
+        
+        .action-btn:hover { 
+            background: #5db7d3; 
+            transform: scale(1.05);
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        @media (max-width: 768px) {
+            .table-header { display: none; }
+            .table-row { flex-direction: column; padding: 15px; border-bottom: 2px solid #000; }
+            .table-cell { padding: 5px 0; width: 100%; }
+            .table-cell:before { content: attr(data-label); font-weight: bold; margin-right: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-brand">DIGITAL VILLAGE</div>
+        <div class="admin-profile">
+            <div class="admin-info">
+                <div class="admin-name" id="displayUserName">Username</div>
+                <div class="admin-role" id="displayUserRole" style="font-size: 11px; font-weight: bold; opacity: 0.7; text-transform: uppercase;">Role</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="layout-body">
+        <aside class="sidebar" id="sidebarMenu"></aside>
+
+        <main class="main-content">
+            <div class="content-card">
+                <h2 class="page-title" id="pageHeader">Manage Complaints</h2>
+                
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-header-cell">Complaint ID</div>
+                        <div class="table-header-cell" id="userColHeader">Submitted By</div>
+                        <div class="table-header-cell">Category</div>
+                        <div class="table-header-cell">Status</div>
+                        <div class="table-header-cell">Action</div>
+                    </div>
+                    
+                    <div id="complaintsTableBody">
+                        </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Get Session Data correctly
+            const sessionData = localStorage.getItem('currentUser');
+            
+            if (!sessionData) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            const user = JSON.parse(sessionData);
+            
+            // Fix: Use user object properties
+            document.getElementById('displayUserName').innerText = user.fullName;
+            document.getElementById('displayUserRole').innerText = user.role;
+
+            const isAdmin = user.role.toLowerCase().includes('admin');
+            
+            // 2. Load Sidebar & Header
+            setupUI(isAdmin);
+
+            // 3. Load Table Data
+            loadComplaints(isAdmin, user.fullName);
+        });
+
+        function setupUI(isAdmin) {
+            const sidebar = document.getElementById('sidebarMenu');
+            if (isAdmin) {
+                sidebar.innerHTML = `
+                    <div class="menu-label">ADMIN PANEL</div>
+                    <a href="../admin/admindashboard.html" class="menu-item">Dashboard Summary</a>
+                    <a href="welfareregisterpage.html" class="menu-item">Register Welfare</a>
+                    <a href="viewapplications.html" class="menu-item">View Applicants</a>
+                    <a href="viewcomplaints.html" class="menu-item active">Manage Complaints</a>
+                    <a href="../shared/aidtracker.html" class="menu-item">Aid Delivery List</a>
+                `;
+                document.getElementById('pageHeader').innerText = 'All System Complaints';
+            } else {
+                sidebar.innerHTML = `
+                    <div class="menu-label">USER MENU</div>
+                    <a href="../user/userdashboard.html" class="menu-item">My Dashboard</a>
+                    <a href="welfareregisterpage.html" class="menu-item">Apply Welfare</a>
+                    <a href="viewapplications.html" class="menu-item">My Applications</a>
+                    <a href="viewcomplaints.html" class="menu-item active">My Complaints</a>
+                    <a href="../user/submit-complaint.html" class="menu-item">Submit Complaint</a>
+                `;
+                document.getElementById('pageHeader').innerText = 'My Submitted Complaints';
+                // Hide user column for Residents
+                document.getElementById('userColHeader').style.display = 'none';
+            }
+        }
+
+        function loadComplaints(isAdmin, currentUserName) {
+            // Initialize dummy data if empty
+            if (!localStorage.getItem('complaints_db')) {
+                const initialComplaints = [
+                    { id: 'CMP-001', name: currentUserName, type: 'Poor Services', status: 'Pending' , text: 'The road conditions in my area are terrible and need urgent repair.'},
+                    { id: 'CMP-4523', name: 'Ali Hassan', type: 'Corruption', status: 'Pending' , text: 'The local government is corrupt and should be held accountable for their actions.'},
+                    { id: 'CMP-8805', name: 'Siti Aminah', type: 'Infrastructure', status: 'Resolved', text: 'The new community center has greatly improved our neighborhood and brought us together.'},
+                    { id: 'CMP-9002', name: 'John Doe', type: 'Late Aid', status: 'In Progress' , text: 'The aid delivery system is late and needs to be fixed.'},
+                ];
+                localStorage.setItem('complaints_db', JSON.stringify(initialComplaints));
+            }
+
+            let db = JSON.parse(localStorage.getItem('complaints_db'));
+            const container = document.getElementById('complaintsTableBody');
+
+            // Filter for non-admins
+            if (!isAdmin) {
+                db = db.filter(item => item.name === currentUserName);
+            }
+
+            container.innerHTML = db.map(item => `
+                <div class="table-row">
+                    <div class="table-cell" data-label="ID">${item.id}</div>
+                    ${isAdmin ? `<div class="table-cell" data-label="User">${item.name}</div>` : ''}
+                    <div class="table-cell" data-label="Type">${item.type}</div>
+                    <div class="table-cell" data-label="Status">
+                        <span class="status-pill pill-${item.status.toLowerCase().replace(/\s+/g, '-')}">
+                            ${item.status}
+                        </span>
+                    </div>
+                    <div class="table-cell" data-label="Action">
+                        <button class="action-btn" onclick="goToReview('${item.id}', ${isAdmin})">
+                            ${isAdmin ? 'View & Reply' : 'View Status'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function goToReview(id, isAdmin) {
+            if(isAdmin) {
+                window.location.href = `../admin/responsecomplaint.html?id=${id}`;
+            } else {
+                alert('Complaint Status for ' + id + ': Our team is currently reviewing your submission.');
+            }
+        }
+
+        function logout() {
+            if(confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = '../login.html'; 
+            }
+        }
+    </script>
+</body>
+</html>

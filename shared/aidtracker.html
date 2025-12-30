@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aid Delivery Tracker - Digital Village</title>
+    
+    <link rel="stylesheet" href="../style.css"> 
+
+    <style>
+        /* Table-specific styles to match the Digital Village theme */
+        .page-title { margin-bottom: 20px; color: #2b8fae; font-size: 28px; font-weight: 700; }
+        
+        .table-container { 
+            width: 100%; 
+            background: #fff;
+            border: 2px solid #000; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.1);
+        }
+        
+        .table-header { 
+            display: flex; 
+            background: #7dc9e1; 
+            border-bottom: 2px solid #000; 
+            font-weight: 800; 
+            color: #000;
+        }
+        
+        .table-row { 
+            display: flex; 
+            border-bottom: 1px solid #eee; 
+            transition: 0.2s; 
+            align-items: center;
+        }
+        
+        .table-row:last-child { border-bottom: none; }
+        .table-row:hover { background-color: #f0f7f9; }
+        
+        .table-cell, .table-header-cell { 
+            flex: 1; 
+            padding: 15px; 
+            text-align: left; 
+            font-size: 16px;
+        }
+        
+        /* Progress Badges */
+        .status-pill { 
+            padding: 5px 12px; 
+            border-radius: 15px; 
+            font-size: 11px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            border: 1px solid rgba(0,0,0,0.1); 
+        }
+        .status-preparing { background: #fef3c7; color: #92400e; }
+        .status-shipped { background: #dbeafe; color: #1e40af; }
+        .status-delivered { background: #d1fae5; color: #065f46; }
+        
+        .action-btn { 
+            background: #7dc9e1; 
+            border: 1px solid #000; 
+            padding: 8px 18px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            color: #000;
+            font-size: 13px;
+            text-align: center;
+        }
+        
+        .action-btn:hover { 
+            background: #5db7d3; 
+            transform: scale(1.05);
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        .user-view-only {
+            font-style: italic;
+            color: #666;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .table-header { display: none; }
+            .table-row { flex-direction: column; padding: 15px; border-bottom: 2px solid #000; }
+            .table-cell { padding: 5px 0; width: 100%; }
+            .table-cell:before { content: attr(data-label); font-weight: bold; margin-right: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <div class="nav-brand">DIGITAL VILLAGE</div>
+        <div class="admin-profile">
+            <div class="admin-info">
+                <div class="admin-name" id="displayUserName">Username</div>
+                <div class="admin-role" id="displayUserRole" style="font-size: 11px; font-weight: bold; opacity: 0.7; text-transform: uppercase;">Role</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="layout-body">
+        <aside class="sidebar" id="sidebarMenu"></aside>
+
+        <main class="main-content">
+            <div class="content-card">
+                <h2 class="page-title">Aid Delivery Tracker</h2>
+                
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-header-cell">Delivery ID</div>
+                        <div class="table-header-cell">Recipient</div>
+                        <div class="table-header-cell">Aid Type</div>
+                        <div class="table-header-cell">Status</div>
+                        <div class="table-header-cell">Action</div>
+                    </div>
+                    
+                    <div id="deliveryTableBody">
+                        </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sessionData = localStorage.getItem('currentUser');
+            if (!sessionData) {
+                window.location.href = '../login.html';
+                return;
+            }
+
+            const user = JSON.parse(sessionData);
+            document.getElementById('displayUserName').innerText = user.fullName;
+            document.getElementById('displayUserRole').innerText = user.role;
+
+            const isAdmin = user.role.toLowerCase().includes('admin');
+            setupSidebar(isAdmin);
+            loadDeliveries(isAdmin, user.fullName);
+        });
+
+        function setupSidebar(isAdmin) {
+            const sidebar = document.getElementById('sidebarMenu');
+            if (isAdmin) {
+                sidebar.innerHTML = `
+                    <div class="menu-label">ADMIN PANEL</div>
+                    <a href="admindashboard.html" class="menu-item">Dashboard Summary</a>
+                    <a href="../shared/welfareregisterpage.html" class="menu-item">Register Welfare</a>
+                    <a href="../shared/viewapplications.html" class="menu-item">View Applicants</a>
+                    <a href="../shared/viewcomplaints.html" class="menu-item">Manage Complaints</a>
+                    <a href="../shared/aidtracker.html" class="menu-item">Aid Delivery List</a>
+                `;
+            } else {
+                sidebar.innerHTML = `
+                    <div class="menu-label">USER MENU</div>
+                    <a href="../user/userdashboard.html" class="menu-item">My Dashboard</a>
+                    <a href="../shared/welfareregisterpage.html" class="menu-item">Apply Welfare</a>
+                    <a href="../shared/viewapplications.html" class="menu-item">Check Status</a>
+                    <a href="aid-list.html" class="menu-item active">My Aid Deliveries</a>
+                `;
+            }
+        }
+
+        function loadDeliveries(isAdmin, currentUserName) {
+            // Ensure delivery DB exists
+            if (!localStorage.getItem('delivery_db')) {
+                const dummyDeliveries = [
+                    { id: "DEL-7701", recipient: currentUserName, type: "Food Basket", status: "Preparing" },
+                    { id: "DEL-7702", recipient: "Siti Aminah", type: "Medical Kit", status: "Shipped" },
+                    { id: "DEL-7703", recipient: currentUserName, type: "Financial Aid", status: "Delivered" },
+                    { id: "DEL-7704", recipient: "Ramasamy Logan", type: "B40 Support", status: "Preparing" }
+                ];
+                localStorage.setItem('delivery_db', JSON.stringify(dummyDeliveries));
+            }
+
+            let deliveries = JSON.parse(localStorage.getItem('delivery_db'));
+
+            // If user, only show their own deliveries
+            if (!isAdmin) {
+                deliveries = deliveries.filter(d => d.recipient === currentUserName);
+            }
+
+            const tableBody = document.getElementById('deliveryTableBody');
+            
+            if (deliveries.length === 0) {
+                tableBody.innerHTML = `<div class="table-row"><div class="table-cell" style="width:100%; text-align:center;">No delivery records found.</div></div>`;
+                return;
+            }
+
+            tableBody.innerHTML = deliveries.map(item => `
+                <div class="table-row">
+                    <div class="table-cell" data-label="ID">#${item.id}</div>
+                    <div class="table-cell" data-label="Recipient">${item.recipient}</div>
+                    <div class="table-cell" data-label="Type">${item.type}</div>
+                    <div class="table-cell" data-label="Status">
+                        <span class="status-pill status-${item.status.toLowerCase()}">${item.status}</span>
+                    </div>
+                    <div class="table-cell" data-label="Action">
+                        ${isAdmin ? 
+                            `<a href="../admin/updateaidtracker.html?id=${item.id}" class="action-btn">Update Status</a>` : 
+                            `<span class="user-view-only">View Only</span>`
+                        }
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function logout() {
+            if(confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = '../login.html'; 
+            }
+        }
+    </script>
+</body>
+</html>

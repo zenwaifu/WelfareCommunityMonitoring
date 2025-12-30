@@ -1,0 +1,108 @@
+/* style.css - Global Styles for Digital Village */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+body { 
+    font-family: 'Inter', -apple-system, sans-serif; 
+    background-color: #f4f7f6; 
+    min-height: 100vh; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+/* --- NAVIGATION --- */
+.top-nav { 
+    background-color: #7dc9e1; 
+    height: 70px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 0 30px; 
+    border-bottom: 2px solid #000; 
+    position: sticky; 
+    top: 0; 
+    z-index: 1000; 
+}
+
+.nav-brand { font-size: 24px; font-weight: 800; color: #000; text-decoration: none; }
+
+.admin-profile, .user-profile { 
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
+}
+
+.admin-info, .user-info { 
+    text-align: right; 
+    line-height: 1.2; 
+}
+
+.admin-name, .user-name { font-weight: 700; font-size: 16px; }
+.admin-role, .user-role { font-size: 11px; font-weight: bold; opacity: 0.7; text-transform: uppercase; }
+
+.logout-btn { 
+    background-color: #ef4141; 
+    color: white; 
+    border: 1px solid #000; 
+    padding: 8px 20px; 
+    border-radius: 20px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: 0.3s; 
+}
+
+.logout-btn:hover { background-color: #d63031; transform: scale(1.05); }
+
+/* --- LAYOUT --- */
+.layout-body { display: flex; flex: 1; }
+
+.sidebar { 
+    width: 280px; 
+    background-color: #96afb8; 
+    border-right: 2px solid #000; 
+    padding: 40px 0; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.menu-label { 
+    padding: 0 25px; 
+    font-size: 14px; 
+    font-weight: 800; 
+    color: #000; 
+    margin-bottom: 20px; 
+    opacity: 0.7; 
+}
+
+.menu-item { 
+    padding: 15px 25px; 
+    text-decoration: none; 
+    color: #000; 
+    font-size: 18px; 
+    font-weight: 500; 
+    transition: 0.2s; 
+    border-left: 5px solid transparent; 
+}
+
+.menu-item:hover { background-color: rgba(255,255,255,0.2); }
+.menu-item.active { background-color: rgba(255,255,255,0.3); border-left: 5px solid #000; font-weight: 700; }
+
+/* --- COMPONENTS --- */
+.main-content { flex: 1; padding: 40px; }
+
+.content-card { 
+    background: white; 
+    border: 2px solid #000; 
+    border-radius: 15px; 
+    padding: 30px; 
+    box-shadow: 10px 10px 0px rgba(0,0,0,0.1); 
+}
+
+/* Responsive Sidebar */
+@media (max-width: 992px) {
+    .sidebar { width: 80px; align-items: center; }
+    .menu-item span, .menu-label { display: none; }
+}

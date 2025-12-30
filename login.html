@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Digital Village Management System</title>
+
+    <style>
+        /* Keeping your specific Login styles here since they differ from the Dashboard layout */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; min-height: 100vh; }
+        .mainContainer { display: flex; width: 100%; min-height: 100vh; }
+
+        .imageSection { width: 50%; height: 100vh; overflow: hidden; background-color: #f0f7f9; }
+        .image { width: 100%; height: 100%; object-fit: cover; }
+    
+        .formSection { width: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; } 
+        .loginWrapper { width: 100%; max-width: 400px; }
+
+        .loginHeader { color: #2b8fae; font-size: 1.1rem; text-align: center; }
+        .loginTitle { color: #7dc9e1; margin: 15px 0 30px 0; font-size: 2.2rem; text-align: center; font-weight: 800; }
+
+        .loginForm { display: flex; flex-direction: column; gap: 15px; }
+        .inputGroup { display: flex; flex-direction: column; gap: 8px; }
+        .inputGroup label { font-size: 0.9rem; font-weight: 600; color: #444; }
+        .inputGroup input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+
+        .roleSelector { display: flex; gap: 12px; margin-bottom: 10px; }
+        .roleBtn { flex: 1; padding: 12px; cursor: pointer; border: 2px solid #7dc9e1; background: white; border-radius: 25px; font-weight: 600; color: #7dc9e1; transition: 0.3s; }
+        .roleBtn.active { background-color: #7dc9e1; color: white; }
+
+        .submitBtn { padding: 14px; background-color: #7dc9e1; color: white; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 1.1rem; margin-top: 20px; }
+        .submitBtn:hover { background-color: #2b8fae; }
+
+        .hidden { display: none; }
+        @media (max-width: 768px) { .imageSection { display: none; } .formSection { width: 100%; } }
+    </style>
+</head>
+<body>
+    <main class="mainContainer">
+        <section class="imageSection">
+            <img src="assets/kampung.png" alt="Village" class="image">
+        </section>
+
+        <section class="formSection">
+            <div class="loginWrapper">
+                <p class="loginHeader">Digital Village Management System</p>
+                <h1 class="loginTitle">Log In</h1>
+                
+                <form class="loginForm" id="mainLoginForm">
+                    <div class="inputGroup">
+                        <label style="text-align: center;">I am a...</label>
+                        <div class="roleSelector">
+                            <button type="button" class="roleBtn active" id="btnUser">Resident</button>
+                            <button type="button" class="roleBtn" id="btnAdmin">Admin</button>
+                        </div>
+                        <input type="hidden" name="role" id="roleInput" value="user">
+                    </div>
+
+                    <div class="inputGroup">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" placeholder="Enter username" required>
+                    </div>
+
+                    <div class="inputGroup" id="emailGroup">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="Enter email">
+                    </div>
+
+                    <div class="inputGroup">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="submitBtn">Log In</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const btnUser = document.getElementById('btnUser');
+        const btnAdmin = document.getElementById('btnAdmin');
+        const roleInput = document.getElementById('roleInput');
+        const emailGroup = document.getElementById('emailGroup');
+        const emailInput = document.getElementById('email');
+
+        btnUser.addEventListener('click', () => {
+            roleInput.value = 'user';
+            btnUser.classList.add('active');
+            btnAdmin.classList.remove('active');
+
+            emailGroup.classList.remove('hidden');
+            emailInput.disabled = false;
+            emailInput.required = true;
+        });
+
+        btnAdmin.addEventListener('click', () => {
+            roleInput.value = 'admin';
+            btnAdmin.classList.add('active');
+            btnUser.classList.remove('active');
+
+            emailGroup.classList.add('hidden');
+            emailInput.required = false;
+            emailInput.disabled = true;
+            emailInput.value = '';
+        });
+
+        document.getElementById('mainLoginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const usernameInput = document.getElementById('username').value.trim();
+            const passwordInput = document.getElementById('password').value.trim();
+            const role = roleInput.value;
+            const emailInputVal = emailInput.value.trim();
+
+            localStorage.clear(); // Wipe old sessions
+
+            // --- DUMMY DATABASE ---
+            const dummyAdmin = {
+                username: "hello",
+                password: "12345",
+                fullName: "Admin Staff",
+                role: "OFFICIAL ADMIN",
+                dept: "Village Management"
+            };
+
+            const dummyUser = {
+                username: usernameInput, // Takes whatever they typed
+                fullName: usernameInput.charAt(0).toUpperCase() + usernameInput.slice(1),
+                role: "RESIDENT",
+                email: emailInputVal
+            };
+
+            if (role === 'admin') {
+                if (usernameInput === dummyAdmin.username && passwordInput === dummyAdmin.password) {
+                    // Save admin object to session
+                    localStorage.setItem('currentUser', JSON.stringify(dummyAdmin));
+                    window.location.href = './admin/admindashboard.html';
+                } else {
+                    alert('Invalid Admin Credentials');
+                }
+            } else {
+                // Save resident object to session
+                localStorage.setItem('currentUser', JSON.stringify(dummyUser));
+                window.location.href = './shared/welfareregisterpage.html';
+            }
+        });
+    </script>
+
+</body>
+</html>
